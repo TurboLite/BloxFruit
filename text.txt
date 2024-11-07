@@ -1,0 +1,48 @@
+-- Lấy dịch vụ Players để truy cập vào người chơi hiện tại
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer  -- Lấy đối tượng người chơi hiện tại
+
+-- Kiểm tra xem Visual đã được xác định chưa
+if not Visual then
+    Visual = {} -- Tạo một bảng rỗng nếu Visual chưa được xác định
+end
+
+-- Thêm hàm AddTextBox vào bảng Visual nếu chưa có
+if not Visual.AddTextBox then
+    Visual.AddTextBox = function(params)
+        -- Tạo UI đơn giản để thử nghiệm trong trường hợp không có UI gốc
+        local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+        local Frame = Instance.new("Frame", ScreenGui)
+        Frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+        Frame.Size = UDim2.new(0, 200, 0, 100)
+
+        local TextBox = Instance.new("TextBox", Frame)
+        TextBox.Size = UDim2.new(1, 0, 0.5, 0)
+        TextBox.PlaceholderText = params.PlaceholderText or ""
+        TextBox.Text = params.Default or ""
+
+        local Button = Instance.new("TextButton", Frame)
+        Button.Position = UDim2.new(0, 0, 0.5, 0)
+        Button.Size = UDim2.new(1, 0, 0.5, 0)
+        Button.Text = "Xác nhận"
+
+        Button.MouseButton1Click:Connect(function()
+            params.Callback(TextBox.Text)
+        end)
+    end
+end
+
+-- Gọi hàm AddTextBox để tạo hộp nhập liệu
+Visual:AddTextBox({
+    Title = "Fake Money",
+    Default = "",
+    PlaceholderText = "Money",
+    Callback = function(value)
+        -- Kiểm tra nếu người chơi và giá trị Beli tồn tại
+        if player and player:FindFirstChild("Data") and player.Data:FindFirstChild("Beli") then
+            player.Data.Beli.Value = tonumber(value) or 0  -- Chuyển giá trị thành số và gán
+        else
+            warn("Không tìm thấy biến Beli trong dữ liệu của người chơi.")
+        end
+    end
+})
